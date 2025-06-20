@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathfinder Encounter & Loot Generator (PF2e)</title>
+    <!-- Load Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use fantasy-themed fonts from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables for Theming */
+        :root {
+            /* Light Theme Defaults */
+            --bg-body: #f3f4f6;
+            --bg-container: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #6b7280;
+            --text-heading: #2c3e50;
+            --bg-inner-section: #f9fafb;
+            --border-color: #d1d5db;
+            --input-bg: #ffffff;
+            --input-text: #333333;
+            --input-border: #d1d5db;
+            --input-focus-border: #2563eb;
+            --input-focus-shadow: rgba(59, 130, 246, 0.5); /* blue-500 with opacity */
+            --button-blue: #3b82f6;
+            --button-blue-hover: #2563eb;
+            --button-blue-border: #2563eb;
+            --button-green: #22c55e;
+            --button-green-hover: #16a34a;
+            --button-green-border: #16a34a;
+            --button-gray: #6b7280;
+            --button-gray-hover: #4b5563;
+            --button-gray-border: #4b5563;
+            --xp-bar-color: #fbbf24; /* Amber-400 */
+            --shadow-color-light: rgba(0, 0, 0, 0.1);
+            --shadow-color-dark: rgba(0, 0, 0, 0.05);
+
+            /* Difficulty Bar Colors (Light Theme) */
+            --diff-trivial: #dcfce7; /* Light Green */
+            --diff-low: #86efac;    /* Green */
+            --diff-moderate: #facc15; /* Yellow */
+            --diff-severe: #f97316;   /* Orange */
+            --diff-extreme: #ef4444;  /* Red */
+            --diff-unknown: #cccccc; /* Grey */
+        }
+
+        /* Dark Theme Variables */
+        html[data-theme="dark"] {
+            --bg-body: #1a1a1a;
+            --bg-container: #282828;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --text-heading: #F0D47C; /* Soft gold */
+            --bg-inner-section: #333333;
+            --border-color: #555555;
+            --input-bg: #3A3A3A;
+            --input-text: #E0E0E0;
+            --input-border: #555555;
+            --input-focus-border: #F0D47C; /* Gold focus */
+            --input-focus-shadow: rgba(240, 212, 124, 0.5); /* Gold glow */
+            --button-blue: #4C72B0; /* Deep blue */
+            --button-blue-hover: #3A5B8A;
+            --button-blue-border: #3A5B8A;
+            --button-green: #6BA36B; /* Forest green */
+            --button-green-hover: #558755;
+            --button-green-border: #558755;
+            --button-gray: #606060; /* Neutral dark grey */
+            --button-gray-hover: #484848;
+            --button-gray-border: #484848;
+            --xp-bar-color: #D4AF37; /* Gold */
+            --shadow-color-light: rgba(0, 0, 0, 0.3);
+            --shadow-color-dark: rgba(0, 0, 0, 0.1);
+
+            /* Difficulty Bar Colors (Dark Theme - slightly adjusted for contrast) */
+            --diff-trivial: #A3E6B6; /* Very Light Green */
+            --diff-low: #75C989;    /* Light Green */
+            --diff-moderate: #D4AF37; /* Gold */
+            --diff-severe: #E28743;  /* Burnt Orange */
+            --diff-extreme: #C0392B; /* Deep Red */
+            --diff-unknown: #444444; /* Dark Grey */
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-body);
+            position: relative;
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: background-color 0.5s ease; /* Smooth transition for theme change */
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://placehold.co/1920x1080/1a1a1a/505050/png?text=Fantasy+Map'); /* Consistent placeholder */
+            background-size: cover;
+            background-position: center;
+            opacity: 0.1;
+            z-index: -1;
+        }
+        h1, h2 {
+            font-family: 'Cinzel', serif;
+            color: var(--text-heading);
+        }
+        .container {
+            max-width: 960px; /* Max width for content */
+            background-color: var(--bg-container);
+            box-shadow: 0 10px 15px -3px var(--shadow-color-light), 0 4px 6px -2px var(--shadow-color-dark);
+            transition: background-color 0.5s ease, box-shadow 0.5s ease;
+        }
+        .difficulty-bar-container {
+            height: 12px;
+            border-radius: 9999px;
+            overflow: hidden;
+            background-color: var(--diff-unknown); /* Base for bar before color fills */
+        }
+        .difficulty-bar {
+            height: 100%;
+            transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+        }
+        /* Common styles for form elements */
+        select, input[type="number"], input[type="range"] {
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            border-color: var(--input-border);
+            transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+        }
+        select:focus, input[type="number"]:focus {
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 0 2px var(--input-focus-shadow);
+        }
+        /* Slider Thumb */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--button-blue-hover);
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid var(--text-primary); /* Use primary text color for border for better contrast */
+            box-shadow: 0 2px 4px var(--shadow-color-dark);
+            margin-top: -8px;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: var(--button-blue-hover);
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid var(--text-primary);
+            box-shadow: 0 2px 4px var(--shadow-color-dark);
+        }
+        /* Slider Track */
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            background: var(--input-border); /* Use input border color for track */
+            border-radius: 4px;
+        }
+        input[type="range"]::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            background: var(--input-border); /* Use input border color for track */
+            border-radius: 4px;
+        }
+
+        /* Themed buttons */
+        #generateEncounterBtn {
+            background-color: var(--button-blue);
+            border-bottom: 3px solid var(--button-blue-border);
+        }
+        #generateEncounterBtn:hover {
+            background-color: var(--button-blue-hover);
+        }
+        #generateLootBtn {
+            background-color: var(--button-green);
+            border-bottom: 3px solid var(--button-green-border);
+        }
+        #generateLootBtn:hover {
+            background-color: var(--button-green-hover);
+        }
+        #resetBtn {
+            background-color: var(--button-gray);
+            border-bottom: 3px solid var(--button-gray-border);
+        }
+        #resetBtn:hover {
+            background-color: var(--button-gray-hover);
+        }
+        /* Themed loading/error messages and inner sections */
+        #statusMessage { color: var(--text-heading); }
+        #statusMessage.text-green-600 { color: var(--button-green); }
+        #statusMessage.text-red-600 { color: var(--diff-extreme); }
+        .font-semibold { color: var(--text-primary); } /* Ensure labels are clearly visible */
+        #encounterDisplay, #lootDisplay { color: var(--text-primary); }
+        #difficultyText { color: var(--text-secondary); }
+        .bg-gray-50 {
+            background-color: var(--bg-inner-section);
+            transition: background-color 0.5s ease;
+        }
+        #xpBar { background-color: var(--xp-bar-color); }
+
+        /* Tailwind specific color overrides using CSS variables */
+        /* Ensure primary/secondary text colors apply correctly */
+        .text-gray-700 { color: var(--text-secondary); }
+        .text-gray-800 { color: var(--text-primary); } /* For h1, h2 that aren't specifically themed */
+        .text-lg { color: var(--text-primary); }
+        .text-sm { color: var(--text-secondary); }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+    <div class="container mx-auto shadow-lg rounded-2xl p-6 sm:p-10 relative">
+        <!-- Theme Toggle Button -->
+        <button id="themeToggleBtn" class="absolute top-4 right-4 p-2 rounded-full bg-gray-700 text-white text-xs z-10 hover:bg-gray-600 transition-colors">
+            Toggle Theme
+        </button>
+
+        <!-- Application Title -->
+        <h1 class="text-3xl sm:text-4xl font-bold text-center mb-6">Pathfinder Encounter & Loot Generator (PF2e)</h1>
+
+        <!-- Loading / Error Message Area -->
+        <div id="statusMessage" class="text-center text-lg font-semibold mb-4">
+            Loading data...
+        </div>
+
+        <!-- Sliders - Now at the top, arranged for fluidity -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+            <!-- Party Level Slider -->
+            <div class="flex flex-col">
+                <label for="partyLevel" class="font-semibold mb-2">Party Level: <span id="partyLevelValue">1</span></label>
+                <input type="range" id="partyLevel" min="1" max="20" value="1" class="w-full h-8 rounded-lg appearance-none cursor-pointer">
+            </div>
+
+            <!-- Number of Players Slider -->
+            <div class="flex flex-col">
+                <label for="numPlayers" class="font-semibold mb-2">Number of Players: <span id="numPlayersValue">4</span></label>
+                <input type="range" id="numPlayers" min="1" max="8" value="4" class="w-full h-8 rounded-lg appearance-none cursor-pointer">
+            </div>
+            
+            <!-- Encounter Budget Adjustment Slider -->
+            <div class="flex flex-col">
+                <label for="budgetAdjustment" class="font-semibold mb-2">Budget Adj.: <span id="budgetAdjustmentValue">100</span>%</label>
+                <input type="range" id="budgetAdjustment" min="50" max="200" value="100" class="w-full h-8 rounded-lg appearance-none cursor-pointer">
+            </div>
+        </div>
+
+        <!-- Dropdowns - Below sliders, arranged for fluidity -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+            <!-- Location Selection -->
+            <div class="flex flex-col">
+                <label for="location" class="font-semibold mb-2">Select Location:</label>
+                <select id="location" class="p-3 border rounded-lg focus:ring-F0D47C focus:border-F0D47C">
+                    <option value="Forest">Forest</option>
+                    <option value="Cave">Cave</option>
+                    <option value="Town">Town</option>
+                    <option value="Mountain">Mountain</option>
+                    <option value="Ruins">Ruins</option>
+                    <option value="Swamp">Swamp</option>
+                    <option value="Desert">Desert</option>
+                    <option value="Aquatic">Aquatic</option>
+                    <option value="Volcanic">Volcanic</option>
+                    <option value="Dungeon">Dungeon</option>
+                    <option value="Underground">Underground</option>
+                </select>
+            </div>
+
+            <!-- Difficulty Selection -->
+            <div class="flex flex-col">
+                <label for="difficulty" class="font-semibold mb-2">Select Difficulty:</label>
+                <select id="difficulty" class="p-3 border rounded-lg focus:ring-F0D47C focus:border-F0D47C">
+                    <option value="Trivial">Trivial</option>
+                    <option value="Low">Low</option>
+                    <option value="Moderate" selected>Moderate</option>
+                    <option value="Severe">Severe</option>
+                    <option value="Extreme">Extreme</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+            <button id="generateEncounterBtn" class="flex-1 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105" disabled>
+                Generate Encounter
+            </button>
+            <button id="generateLootBtn" class="flex-1 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105" disabled>
+                Generate Loot
+            </button>
+            <button id="resetBtn" class="flex-1 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105" disabled>
+                Reset
+            </button>
+        </div>
+
+        <!-- Encounter Details -->
+        <div class="p-6 rounded-xl shadow-inner mb-8 bg-gray-50">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-4">Encounter Details:</h2>
+            <div id="encounterDisplay" class="text-lg mb-4">No encounter generated yet.</div>
+
+            <!-- XP Bar -->
+            <div class="mb-4">
+                <p class="font-semibold mb-2">Total XP: <span id="xpValue">0</span></p>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div id="xpBar" class="h-3 rounded-full" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Difficulty Bar -->
+            <div>
+                <p class="font-semibold mb-2">Difficulty:</p>
+                <div class="difficulty-bar-container">
+                    <div id="difficultyBar" class="difficulty-bar" style="width: 0%;"></div>
+                </div>
+                <p id="difficultyText" class="text-sm text-center mt-1"></p>
+            </div>
+        </div>
+
+        <!-- Loot Details -->
+        <div class="p-6 rounded-xl shadow-inner bg-gray-50">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-4">Loot Found:</h2>
+            <div id="lootDisplay" class="text-lg">No loot generated yet.</div>
+        </div>
+    </div>
+
+    <script>
+        // --- Global Data Variables (will be loaded from JSON) ---
+        let MONSTERS = [];
+        let ITEMS = [];
+
+        // PF2e Encounter Budget per 4-person party (XP values from provided table)
+        const XP_BUDGET_PF2E = {
+            "Trivial": 40,
+            "Low": 60,
+            "Moderate": 80,
+            "Severe": 120,
+            "Extreme": 160
+        };
+
+        // PF2e Creature XP based on relative level (creature level - party level)
+        const RELATIVE_LEVEL_TO_XP_PF2E = {
+            "-4": 10,
+            "-3": 15,
+            "-2": 20,
+            "-1": 30,
+            "0": 40,
+            "1": 60,
+            "2": 80,
+            "3": 120,
+            "4": 160,
+            // Beyond this, XP usually flattens or requires custom scaling for extreme differences
+            // For levels below -4 or above +4, we'll cap their effective XP
+            "below-4": 0, // Creatures far below party level give negligible XP
+            "above-4": 200 // Creatures far above party level, cap at a high XP value for calculation
+        };
+
+        // PF2e Treasure Budget per Level and Difficulty (GP values from provided table)
+        const TREASURE_BUDGET_PF2E = {
+            1: { Total: 175, Trivial: 13, Low: 18, Moderate: 26, Severe: 35, Extreme: 35, Extra: 35 },
+            2: { Total: 300, Trivial: 23, Low: 30, Moderate: 45, Severe: 60, Extreme: 60, Extra: 60 },
+            3: { Total: 500, Trivial: 38, Low: 50, Moderate: 75, Severe: 100, Extreme: 100, Extra: 100 },
+            4: { Total: 850, Trivial: 65, Low: 85, Moderate: 130, Severe: 170, Extreme: 170, Extra: 170 },
+            5: { Total: 1350, Trivial: 100, Low: 135, Moderate: 200, Severe: 270, Extreme: 270, Extra: 270 },
+            6: { Total: 2000, Trivial: 150, Low: 200, Moderate: 300, Severe: 400, Extreme: 400, Extra: 400 },
+            7: { Total: 2900, Trivial: 220, Low: 290, Moderate: 440, Severe: 580, Extreme: 580, Extra: 580 },
+            8: { Total: 4000, Trivial: 300, Low: 400, Moderate: 600, Severe: 800, Extreme: 800, Extra: 800 },
+            9: { Total: 5700, Trivial: 430, Low: 570, Moderate: 860, Severe: 1140, Extreme: 1140, Extra: 1140 },
+            10: { Total: 8000, Trivial: 600, Low: 800, Moderate: 1200, Severe: 1600, Extreme: 1600, Extra: 1600 },
+            11: { Total: 11500, Trivial: 865, Low: 1150, Moderate: 1725, Severe: 2300, Extreme: 2300, Extra: 2300 },
+            12: { Total: 16500, Trivial: 1250, Low: 1650, Moderate: 2475, Severe: 3300, Extreme: 3300, Extra: 3300 },
+            13: { Total: 25000, Trivial: 1875, Low: 2500, Moderate: 3750, Severe: 5000, Extreme: 5000, Extra: 5000 },
+            14: { Total: 36500, Trivial: 2750, Low: 3650, Moderate: 5500, Severe: 7300, Extreme: 7300, Extra: 7300 },
+            15: { Total: 54500, Trivial: 4100, Low: 5450, Moderate: 8200, Severe: 10900, Extreme: 10900, Extra: 10900 },
+            16: { Total: 82500, Trivial: 6200, Low: 8250, Moderate: 12400, Severe: 16500, Extreme: 16500, Extra: 16500 },
+            17: { Total: 128000, Trivial: 9600, Low: 12800, Moderate: 19200, Severe: 25600, Extreme: 25600, Extra: 25600 },
+            18: { Total: 208000, Trivial: 15600, Low: 20800, Moderate: 31200, Severe: 41600, Extreme: 41600, Extra: 41600 },
+            19: { Total: 355000, Trivial: 26600, Low: 35500, Moderate: 53250, Severe: 71000, Extreme: 71000, Extra: 71000 },
+            20: { Total: 490000, Trivial: 36800, Low: 49000, Moderate: 73500, Severe: 98000, Extreme: 98000, Extra: 98000 }
+        };
+
+
+        // --- DOM Elements ---
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const htmlElement = document.documentElement; // Get the root html element
+        const locationSelect = document.getElementById('location');
+        const difficultySelect = document.getElementById('difficulty');
+        const partyLevelSlider = document.getElementById('partyLevel');
+        const partyLevelValueSpan = document.getElementById('partyLevelValue');
+        const numPlayersSlider = document.getElementById('numPlayers');
+        const numPlayersValueSpan = document.getElementById('numPlayersValue');
+        const budgetAdjustmentSlider = document.getElementById('budgetAdjustment'); // New slider
+        const budgetAdjustmentValueSpan = document.getElementById('budgetAdjustmentValue'); // New span
+        const generateEncounterBtn = document.getElementById('generateEncounterBtn');
+        const generateLootBtn = document.getElementById('generateLootBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const encounterDisplay = document.getElementById('encounterDisplay');
+        const lootDisplay = document.getElementById('lootDisplay');
+        const xpValueSpan = document.getElementById('xpValue');
+        const xpBar = document.getElementById('xpBar');
+        const difficultyBar = document.getElementById('difficultyBar');
+        const difficultyText = document.getElementById('difficultyText');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // --- Global State ---
+        let currentEncounterXP = 0;
+        let currentMonsterTypes = [];
+        let currentEncounterLocation = "";
+
+        // --- Helper Functions ---
+
+        /**
+         * Fetches JSON data from a given URL.
+         * @param {string} url - The URL of the JSON file.
+         * @returns {Promise<Array>} A promise that resolves with the parsed JSON data.
+         */
+        async function fetchJsonData(url) {
+            try {
+                // Prepend a '/' to ensure absolute path from the domain root
+                // This typically resolves "Failed to parse URL" errors in browser contexts like iframes or direct file access.
+                const absoluteUrl = `/${url}`;
+                const response = await fetch(absoluteUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} from ${absoluteUrl}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error(`Could not fetch data from ${url}:`, error);
+                throw error;
+            }
+        }
+
+        /**
+         * Generates a random integer within a specified range.
+         * @param {number} min - The minimum value (inclusive).
+         * @param {number} max - The maximum value (inclusive).
+         * @returns {number} A random integer.
+         */
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        /**
+         * Gets the XP cost of a creature based on its level relative to party level (PF2e).
+         * @param {number} creatureLevel - The absolute level of the creature.
+         * @param {number} partyLevel - The current party level from the slider.
+         * @returns {number} The XP value of the creature for encounter building.
+         */
+        function getCreatureXPForEncounter(creatureLevel, partyLevel) {
+            const relativeLevel = creatureLevel - partyLevel;
+
+            if (relativeLevel <= -4) {
+                return RELATIVE_LEVEL_TO_XP_PF2E["-4"];
+            } else if (relativeLevel >= 4) {
+                return RELATIVE_LEVEL_TO_XP_PF2E["4"];
+            } else {
+                return RELATIVE_LEVEL_TO_XP_PF2E[String(relativeLevel)];
+            }
+        }
+
+        /**
+         * Rolls dice based on a string (e.g., "2d6").
+         * @param {string} diceString - The dice notation string (e.g., "1d6", "2d4", "3d8").
+         * @returns {number} The total result of the dice roll.
+         */
+        function rollDice(diceString) {
+            const parts = diceString.split('d');
+            const numDice = parseInt(parts[0]);
+            const dieSize = parseInt(parts[1]);
+            let total = 0;
+            for (let i = 0; i < numDice; i++) {
+                total += getRandomInt(1, dieSize);
+            }
+            return total;
+        }
+
+        /**
+         * Updates the XP bar and its numerical display.
+         * @param {number} xp - The current XP value.
+         * @param {number} maxXPForBar - The maximum XP value to scale the bar against (e.g., Extreme budget).
+         */
+        function updateXPBar(xp, maxXPForBar = XP_BUDGET_PF2E["Extreme"] * 1.5) {
+            xpValueSpan.textContent = xp;
+            let percentage = (xp / maxXPForBar) * 100;
+            if (percentage > 100) percentage = 100;
+            xpBar.style.width = `${percentage}%`;
+        }
+
+        /**
+         * Updates the difficulty bar and text based on calculated XP.
+         * @param {number} xp - The current encounter XP.
+         */
+        function updateDifficultyBar(xp) {
+            let difficulty = "Unknown";
+            let color = "var(--diff-unknown)";
+            let barWidth = 0;
+
+            if (xp <= XP_BUDGET_PF2E["Trivial"]) {
+                difficulty = "Trivial";
+                color = "var(--diff-trivial)";
+                barWidth = 20;
+            } else if (xp <= XP_BUDGET_PF2E["Low"]) {
+                difficulty = "Low";
+                color = "var(--diff-low)";
+                barWidth = 40;
+            } else if (xp <= XP_BUDGET_PF2E["Moderate"]) {
+                difficulty = "Moderate";
+                color = "var(--diff-moderate)";
+                barWidth = 60;
+            } else if (xp <= XP_BUDGET_PF2E["Severe"]) {
+                difficulty = "Severe";
+                color = "var(--diff-severe)";
+                barWidth = 80;
+            } else { // Extreme or beyond
+                difficulty = "Extreme";
+                color = "var(--diff-extreme)";
+                barWidth = 100;
+            }
+
+            difficultyText.textContent = difficulty;
+            difficultyBar.style.width = `${barWidth}%`;
+            difficultyBar.style.backgroundColor = color;
+        }
+
+        /**
+         * Adjusts the target XP budget based on party size.
+         * @param {number} baseBudgetXP - The base XP budget for a 4-person party.
+         * @param {number} numPlayers - The actual number of players in the party.
+         * @returns {number} The adjusted XP budget.
+         */
+        function adjustBudgetXPForPartySize(baseBudgetXP, numPlayers) {
+            const standardPartySize = 4;
+            const adjustmentPerPlayer = baseBudgetXP / standardPartySize;
+
+            if (numPlayers < standardPartySize) {
+                return baseBudgetXP - (adjustmentPerPlayer * (standardPartySize - numPlayers));
+            } else if (numPlayers > standardPartySize) {
+                return baseBudgetXP + (adjustmentPerPlayer * (numPlayers - standardPartySize));
+            }
+            return baseBudgetXP;
+        }
+
+        /**
+         * Generates an encounter based on selected location, difficulty, party level, and number of players.
+         */
+        function generateEncounter() {
+            if (MONSTERS.length === 0) {
+                encounterDisplay.innerHTML = `<p class="text-red-600">Monster data not loaded. Please check data files.</p>`;
+                return;
+            }
+
+            const selectedLocation = locationSelect.value;
+            const selectedDifficulty = difficultySelect.value;
+            const partyLevel = parseInt(partyLevelSlider.value);
+            const numPlayers = parseInt(numPlayersSlider.value);
+            const budgetAdjustment = parseInt(budgetAdjustmentSlider.value); // Get budget adjustment percentage
+
+            currentEncounterLocation = selectedLocation;
+
+            const suitableMonsters = MONSTERS.filter(monster =>
+                monster.locations && monster.locations.includes(selectedLocation) &&
+                typeof monster.level === 'number'
+            );
+
+            if (suitableMonsters.length === 0) {
+                encounterDisplay.innerHTML = `<p class="text-red-600">No monsters found for ${selectedLocation} or monsters have invalid level data!</p>`;
+                xpValueSpan.textContent = 0;
+                updateXPBar(0);
+                updateDifficultyBar(0);
+                currentEncounterXP = 0;
+                currentMonsterTypes = [];
+                return;
+            }
+
+            let baseTargetBudgetXP = XP_BUDGET_PF2E[selectedDifficulty];
+            let adjustedTargetBudgetXP = adjustBudgetXPForPartySize(baseTargetBudgetXP, numPlayers);
+            // Apply the new budget adjustment percentage
+            adjustedTargetBudgetXP = Math.floor(adjustedTargetBudgetXP * (budgetAdjustment / 100));
+
+            let encounterMonsters = [];
+            let totalEncounterXP = 0;
+            let attempts = 0;
+            const maxAttempts = 50;
+
+            while (totalEncounterXP < adjustedTargetBudgetXP * 0.8 || totalEncounterXP > adjustedTargetBudgetXP * 1.5) {
+                if (attempts > maxAttempts) break;
+                encounterMonsters = [];
+                totalEncounterXP = 0;
+
+                let mainMonster = suitableMonsters[getRandomInt(0, suitableMonsters.length - 1)];
+                let mainQuantity = getRandomInt(mainMonster.quantity_range[0], mainMonster.quantity_range[1]);
+                let mainMonsterXP = getCreatureXPForEncounter(mainMonster.level, partyLevel);
+
+                encounterMonsters.push({ monster: mainMonster, quantity: mainQuantity, xpPer: mainMonsterXP });
+                totalEncounterXP += mainMonsterXP * mainQuantity;
+
+                if (adjustedTargetBudgetXP > XP_BUDGET_PF2E["Low"]) {
+                    let numAdditionalTypes = getRandomInt(0, 1);
+                    for (let i = 0; i < numAdditionalTypes; i++) {
+                        let additionalMonster = suitableMonsters[getRandomInt(0, suitableMonsters.length - 1)];
+                        if (additionalMonster.name === mainMonster.name && suitableMonsters.length > 1) {
+                            additionalMonster = suitableMonsters.find(m => m.name !== mainMonster.name) || additionalMonster;
+                        }
+
+                        let additionalQuantity = getRandomInt(1, Math.min(additionalMonster.quantity_range[1], 2));
+                        let additionalMonsterXP = getCreatureXPForEncounter(additionalMonster.level, partyLevel);
+
+                        if ((totalEncounterXP + (additionalMonsterXP * additionalQuantity)) <= adjustedTargetBudgetXP * 1.5) {
+                            encounterMonsters.push({ monster: additionalMonster, quantity: additionalQuantity, xpPer: additionalMonsterXP });
+                            totalEncounterXP += additionalMonsterXP * additionalQuantity;
+                        }
+                    }
+                }
+                attempts++;
+            }
+
+            if (attempts > maxAttempts) {
+                encounterDisplay.innerHTML = `<p class="text-red-600">Could not perfectly match difficulty for ${selectedDifficulty} (Party Level ${partyLevel}, ${numPlayers} Players, Budget ${budgetAdjustment}%) in ${selectedLocation}. Generated best fit:</p>`;
+            } else {
+                 encounterDisplay.innerHTML = '';
+            }
+
+            let displayHTML = `<ul class="list-disc pl-5">`;
+            currentMonsterTypes = [];
+            encounterMonsters.forEach(enc => {
+                displayHTML += `<li>${enc.quantity}x ${enc.monster.name} (Level ${enc.monster.level}, ${enc.xpPer * enc.quantity} XP)</li>`;
+                currentMonsterTypes.push(enc.monster.type);
+            });
+            displayHTML += `</ul>`;
+            encounterDisplay.innerHTML += displayHTML;
+
+            currentEncounterXP = totalEncounterXP;
+            updateXPBar(currentEncounterXP, XP_BUDGET_PF2E["Extreme"]);
+            updateDifficultyBar(currentEncounterXP);
+            generateLootBtn.disabled = false;
+        }
+
+        /**
+         * Generates loot based on the current encounter's monster types and location.
+         */
+        function generateLoot() {
+            if (ITEMS.length === 0) {
+                lootDisplay.innerHTML = `<p class="text-red-600">Item data not loaded. Please check data files.</p>`;
+                return;
+            }
+            if (currentMonsterTypes.length === 0) {
+                lootDisplay.innerHTML = `<p class="text-secondary">Generate an encounter first to determine monster types and location for thematic loot!</p>`;
+                return;
+            }
+
+            const partyLevel = parseInt(partyLevelSlider.value);
+            const selectedDifficulty = difficultySelect.value;
+            const budgetAdjustment = parseInt(budgetAdjustmentSlider.value); // Get budget adjustment percentage
+
+            // Get the base treasure amount from the PF2e Treasure Budget table
+            let baseTreasureGP = TREASURE_BUDGET_PF2E[partyLevel] ? TREASURE_BUDGET_PF2E[partyLevel][selectedDifficulty] : 0;
+            // Apply the same budget adjustment to treasure
+            baseTreasureGP = Math.floor(baseTreasureGP * (budgetAdjustment / 100));
+
+
+            if (baseTreasureGP === 0) {
+                lootDisplay.innerHTML = `<p class="text-red-600">No treasure budget found for Party Level ${partyLevel} and ${selectedDifficulty} difficulty. Check treasure table data.</p>`;
+                return;
+            }
+
+            let remainingTreasureGP = baseTreasureGP;
+            let generatedLoot = [];
+
+            // 1. Generate coins (e.g., 60-80% of budget)
+            const coinPercentage = getRandomInt(60, 80) / 100;
+            let coinAmount = Math.floor(baseTreasureGP * coinPercentage);
+            if (coinAmount > 0) {
+                // Distribute coins into different denominations for flavor
+                let plat = Math.floor(coinAmount / 1000);
+                coinAmount -= (plat * 1000);
+                let gold = Math.floor(coinAmount / 10);
+                coinAmount -= (gold * 10);
+                let silver = Math.floor(coinAmount); // Remaining as silver
+
+                let coinString = [];
+                if (plat > 0) coinString.push(`${plat} pp`);
+                if (gold > 0) coinString.push(`${gold} gp`);
+                if (silver > 0) coinString.push(`${silver} sp`);
+
+                if (coinString.length > 0) {
+                    generatedLoot.push(`Coins: ${coinString.join(', ')}`);
+                }
+            }
+            remainingTreasureGP -= coinAmount; // Deduct actual coin value from remaining budget
+
+            // 2. Generate items from remaining budget
+            // Pick items that match monster types AND location
+            let possibleLootItems = ITEMS.filter(item => {
+                const monsterTypeMatch = item.suitable_monster_types.length === 0 ||
+                                         item.suitable_monster_types.some(type => currentMonsterTypes.includes(type));
+                const locationMatch = item.suitable_locations.length === 0 ||
+                                      item.suitable_locations.includes(currentEncounterLocation);
+                // Exclude currency items from "item" generation as we handled coins separately
+                return monsterTypeMatch && locationMatch && item.type !== "currency" && typeof item.value === 'number';
+            });
+
+            // Sort possible items by value to prioritize
+            possibleLootItems.sort((a, b) => b.value - a.value);
+
+            let itemAttempts = 0;
+            const maxItemAttempts = 10;
+            const maxItemsToGenerate = getRandomInt(1, 3); // Generate between 1 and 3 items
+
+            while (generatedLoot.filter(item => !item.startsWith("Coins:")).length < maxItemsToGenerate && itemAttempts < maxItemAttempts && remainingTreasureGP > 0) {
+                // Find a suitable item whose value is not too much more than remaining budget
+                let chosenItem = null;
+                for (const item of possibleLootItems) {
+                    // Try to pick an item whose value is <= remaining budget or slightly over if it's the last item
+                    if (item.value <= remainingTreasureGP * 1.2 || (generatedLoot.length === maxItemsToGenerate - 1 && item.value <= remainingTreasureGP * 2)) {
+                        chosenItem = item;
+                        break;
+                    }
+                }
+
+                if (chosenItem) {
+                    generatedLoot.push(`${chosenItem.name} (Value: ${chosenItem.value} gp)`);
+                    remainingTreasureGP -= chosenItem.value;
+                    possibleLootItems = possibleLootItems.filter(item => item !== chosenItem); // Don't pick same item twice
+                } else {
+                    // If no suitable item found within budget, break
+                    break;
+                }
+                itemAttempts++;
+            }
+            
+            // If there's still a small remaining budget, add it to coins
+            if (remainingTreasureGP > 0) {
+                let lastCoinString = `Additional: ${Math.floor(remainingTreasureGP)} gp`;
+                const existingCoinIndex = generatedLoot.findIndex(item => item.startsWith("Coins:"));
+                if (existingCoinIndex !== -1) {
+                    // Append to existing coin entry
+                    generatedLoot[existingCoinIndex] += `, ${Math.floor(remainingTreasureGP)} gp`;
+                } else {
+                    // Add new coin entry
+                    generatedLoot.push(lastCoinString);
+                }
+            }
+
+
+            if (generatedLoot.length > 0) {
+                // Ensure coin string is always first if present
+                generatedLoot.sort((a, b) => a.startsWith("Coins:") ? -1 : (b.startsWith("Coins:") ? 1 : 0));
+
+                lootDisplay.innerHTML = `<ul class="list-disc pl-5">` +
+                                        generatedLoot.map(item => `<li>${item}</li>`).join('') +
+                                        `</ul>`;
+            } else {
+                lootDisplay.innerHTML = `<p class="text-secondary">No specific loot items found, only coins may be generated.</p>`;
+            }
+        }
+
+        /**
+         * Resets the application state and displays.
+         */
+        function resetApp() {
+            locationSelect.value = "Forest";
+            difficultySelect.value = "Moderate";
+            partyLevelSlider.value = "1";
+            partyLevelValueSpan.textContent = "1";
+            numPlayersSlider.value = "4";
+            numPlayersValueSpan.textContent = "4";
+            budgetAdjustmentSlider.value = "100"; // Reset budget adjustment
+            budgetAdjustmentValueSpan.textContent = "100"; // Reset display
+            encounterDisplay.innerHTML = `No encounter generated yet.`;
+            lootDisplay.innerHTML = `No loot generated yet.`;
+            xpValueSpan.textContent = 0;
+            xpBar.style.width = '0%';
+            difficultyBar.style.width = '0%';
+            difficultyBar.style.backgroundColor = 'var(--diff-unknown)';
+            difficultyText.textContent = 'Unknown';
+            currentEncounterXP = 0;
+            currentMonsterTypes = [];
+            currentEncounterLocation = "";
+            generateLootBtn.disabled = true;
+        }
+
+        /**
+         * Toggles between light and dark themes.
+         */
+        function toggleTheme() {
+            if (htmlElement.getAttribute('data-theme') === 'dark') {
+                htmlElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            } else {
+                htmlElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            updateDifficultyBar(currentEncounterXP);
+        }
+
+        /**
+         * Initializes the application by fetching data and setting up controls.
+         */
+        async function initializeApp() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                htmlElement.setAttribute('data-theme', savedTheme);
+            } else {
+                htmlElement.setAttribute('data-theme', 'dark');
+            }
+
+            statusMessage.textContent = "Loading data...";
+            generateEncounterBtn.disabled = true;
+            generateLootBtn.disabled = true;
+            resetBtn.disabled = true;
+
+            try {
+                MONSTERS = await fetchJsonData('data/monsters.json');
+                ITEMS = await fetchJsonData('data/items.json');
+
+                statusMessage.textContent = "Data loaded successfully!";
+                statusMessage.classList.remove('text-red-600', 'text-yellow-600', 'text-blue-600');
+                statusMessage.style.color = 'var(--button-green)';
+
+                generateEncounterBtn.disabled = false;
+                resetBtn.disabled = false;
+                resetApp();
+            } catch (error) {
+                statusMessage.textContent = `Error loading data. Please ensure 'data/monsters.json' and 'data/items.json' exist and are correctly formatted.`;
+                statusMessage.style.color = 'var(--diff-extreme)';
+                console.error("Initialization failed:", error);
+            }
+        }
+
+        // --- Event Listeners ---
+        generateEncounterBtn.addEventListener('click', generateEncounter);
+        generateLootBtn.addEventListener('click', generateLoot);
+        resetBtn.addEventListener('click', resetApp);
+        themeToggleBtn.addEventListener('click', toggleTheme);
+        
+        // Update slider value displays when sliders move
+        partyLevelSlider.addEventListener('input', () => {
+            partyLevelValueSpan.textContent = partyLevelSlider.value;
+        });
+        numPlayersSlider.addEventListener('input', () => {
+            numPlayersValueSpan.textContent = numPlayersSlider.value;
+        });
+        budgetAdjustmentSlider.addEventListener('input', () => { // New event listener for budget adjustment slider
+            budgetAdjustmentValueSpan.textContent = budgetAdjustmentSlider.value;
+        });
+
+        // Initial setup on load
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>

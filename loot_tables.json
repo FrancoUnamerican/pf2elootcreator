@@ -1,0 +1,16 @@
+{
+  "beast": {
+    "natural_components": [
+      {"item_name": "Wolf Pelt", "chance": 0.5},
+      {"item_name": "Bear Claw", "chance": 0.3},
+      {"item_name": "Spider Venom Sac", "chance": 0.2}
+    ]
+  },
+  "humanoid": {
+    "humanoid_gear": [
+      {"item_name": "Rusty Shortsword", "chance": 0.4},
+      {"item_name": "Leather Armor", "chance": 0.3},
+      {"item_name": "Coins", "chance": 0.8}
+    ]
+  }
+}

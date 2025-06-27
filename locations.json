@@ -1,0 +1,16 @@
+{
+  "forest": {
+    "factions": ["beast", "humanoid"],
+    "creatures": {
+      "beast": ["wolf", "bear", "spider"],
+      "humanoid": ["bandit", "goblin"]
+    }
+  },
+  "mountain": {
+    "factions": ["beast", "monstrosity"],
+    "creatures": {
+      "beast": ["goat", "eagle"],
+      "monstrosity": ["griffon"]
+    }
+  }
+}

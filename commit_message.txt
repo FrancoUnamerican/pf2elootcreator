@@ -1,1 +1,1 @@
-Initial commit: Set up RPG Content Generator with basic tabs, monster editor, loot generator, encounter generator, and campaign generator.
+Feat: Added terrain, environmental conditions, and hazards to encounter generator. Updated locations.json and added hazards.json.

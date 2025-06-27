@@ -3,14 +3,38 @@
 <head>
 <title>RPG Content Generator</title>
 <style>
+/* Pathfinder-inspired color palette */
+:root {
+  --pf-red: #8b0000;
+  --pf-dark-red: #5a0000;
+  --pf-gold: #daa520;
+  --pf-brown: #4a2c2a;
+  --pf-parchment: #f5f5dc;
+  --pf-gray: #333;
+  --pf-light-gray: #eee;
+}
+
 body {
-  font-family: sans-serif;
+  font-family: 'Georgia', serif; /* More classic, fantasy feel */
+  background-color: var(--pf-parchment);
+  color: var(--pf-gray);
+  margin: 20px;
+}
+
+h2, h3, h4 {
+  font-family: 'Trajan Pro', serif; /* Placeholder for a more decorative font */
+  color: var(--pf-dark-red);
+  border-bottom: 1px solid var(--pf-gold);
+  padding-bottom: 5px;
+  margin-top: 20px;
 }
 
 .tab {
   overflow: hidden;
-  border: 1px solid #ccc;
-  background-color: #f1f1f1;
+  border: 1px solid var(--pf-brown);
+  background-color: var(--pf-light-gray);
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .tab button {
@@ -19,43 +43,159 @@ body {
   border: none;
   outline: none;
   cursor: pointer;
-  padding: 14px 16px;
+  padding: 14px 20px;
   transition: 0.3s;
+  font-size: 16px;
+  color: var(--pf-brown);
+  border-right: 1px solid var(--pf-brown);
+}
+
+.tab button:last-child {
+  border-right: none;
 }
 
 .tab button:hover {
-  background-color: #ddd;
+  background-color: var(--pf-gold);
+  color: white;
 }
 
 .tab button.active {
-  background-color: #ccc;
+  background-color: var(--pf-red);
+  color: white;
+  border-bottom: 3px solid var(--pf-gold);
 }
 
 .tabcontent {
   display: none;
-  padding: 6px 12px;
-  border: 1px solid #ccc;
+  padding: 20px;
+  border: 1px solid var(--pf-brown);
   border-top: none;
+  background-color: white;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .row {
   display: flex;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
 }
 
-.col-left {
-  flex: 50%;
-  padding: 10px;
+.col-left, .col-right {
+  flex: 1; /* Distribute space equally */
+  padding: 15px;
+  min-width: 300px; /* Ensure columns don't get too narrow */
 }
 
 .col-right {
-  flex: 50%;
-  padding: 10px;
-  border-left: 1px solid #ccc;
+  border-left: 1px solid var(--pf-brown);
 }
 
+/* Stat Block Styling */
 .stat-block {
-  border: 1px solid #ccc;
+  border: 2px solid var(--pf-dark-red);
+  background-color: var(--pf-parchment);
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 3px 3px 5px rgba(0,0,0,0.3);
+}
+
+.stat-block h4 {
+  color: var(--pf-red);
+  font-size: 1.4em;
+  margin-bottom: 10px;
+  border-bottom: 2px solid var(--pf-gold);
+  padding-bottom: 5px;
+}
+
+.stat-block p {
+  margin-bottom: 5px;
+  line-height: 1.4;
+}
+
+.stat-block b {
+  color: var(--pf-brown);
+}
+
+.stat-block hr {
+  border: none;
+  border-top: 1px dashed var(--pf-gold);
+  margin: 10px 0;
+}
+
+/* Tooltip Styling */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted var(--pf-brown); /* More subtle dotted line */
+  cursor: help;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 250px; /* Slightly wider for more content */
+  background-color: var(--pf-gray);
+  color: #fff;
+  text-align: left; /* Align text left for readability */
+  border-radius: 6px;
   padding: 10px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -125px; /* Center the tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Form elements */
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--pf-brown);
+}
+
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+  width: calc(100% - 12px);
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid var(--pf-brown);
+  border-radius: 4px;
+  background-color: var(--pf-parchment);
+  color: var(--pf-gray);
+}
+
+button {
+  background-color: var(--pf-red);
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: var(--pf-dark-red);
+}
+
+ul {
+  list-style-type: none; /* Remove default bullet points */
+  padding: 0;
+}
+
+li {
+  margin-bottom: 5px;
 }
 </style>
 </head>
@@ -74,49 +214,66 @@ body {
   <div class="row">
     <div class="col-left">
       <h3>Monster Creator/Editor</h3>
-      <label for="monsterSelect">Select Monster:</label><br>
-      <select id="monsterSelect" onchange="loadMonster()"></select>
-      <hr>
-      <form id="monsterForm">
-        <h4>Core Information</h4>
-        <label for="monsterName">Name:</label><br>
-        <input type="text" id="monsterName" name="monsterName" oninput="updateStatBlock()"><br>
-        <label for="level">Level:</label><br>
-        <input type="number" id="level" name="level" oninput="updateStatBlock()"><br>
-        <label for="alignment">Alignment:</label><br>
-        <input type="text" id="alignment" name="alignment" oninput="updateStatBlock()"><br>
-        <label for="size">Size:</label><br>
-        <input type="text" id="size" name="size" oninput="updateStatBlock()"><br>
-
-        <h4>Defense</h4>
-        <label for="armorClass">Armor Class:</label><br>
-        <input type="number" id="armorClass" name="armorClass" oninput="updateStatBlock()"><br>
-        <label for="hitPoints">Hit Points:</label><br>
-        <input type="text" id="hitPoints" name="hitPoints" oninput="updateStatBlock()"><br>
-        <label for="fortitude">Fortitude:</label><br>
-        <input type="number" id="fortitude" name="fortitude" oninput="updateStatBlock()"><br>
-        <label for="reflex">Reflex:</label><br>
-        <input type="number" id="reflex" name="reflex" oninput="updateStatBlock()"><br>
-        <label for="will">Will:</label><br>
-        <input type="number" id="will" name="will" oninput="updateStatBlock()"><br>
-      </form>
+      <p>This tab will allow you to create and edit monster stat blocks. For now, here's a sample monster:</p>
+      <h4>Sample Monster: Goblin Commando</h4>
+      <p>
+        <b>Name:</b> Goblin Commando<br>
+        <b>Level:</b> 1<br>
+        <b>Alignment:</b> Chaotic Evil<br>
+        <b>Size:</b> Small<br>
+      </p>
+      <h4>Defense</h4>
+      <p>
+        <b>Armor Class:</b> 16<br>
+        <b>Hit Points:</b> 20<br>
+        <b>Fortitude:</b> +7<br>
+        <b>Reflex:</b> +9<br>
+        <b>Will:</b> +5<br>
+      </p>
+      <h4>Attacks</h4>
+      <p>
+        <b>Scimitar:</b> Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) slashing damage.
+      </p>
+      <h4>Special Actions</h4>
+      <p>
+        <b>Nimble Escape:</b> The goblin can take the Disengage or Hide action as a bonus action on each of its turns.
+      </p>
+      <h4>Spells</h4>
+      <p>
+        <i>(No spells for this monster)</i>
+      </p>
     </div>
     <div class="col-right">
       <h3>Stat Block</h3>
-      <div id="statBlock" class="stat-block">
-        <h4 id="statBlockName"></h4>
+      <div class="stat-block">
+        <h4>Goblin Commando</h4>
         <p>
-          <b>Level:</b> <span id="statBlockLevel"></span><br>
-          <b>Alignment:</b> <span id="statBlockAlignment"></span><br>
-          <b>Size:</b> <span id="statBlockSize"></span><br>
+          <b>Level:</b> 1<br>
+          <b>Alignment:</b> Chaotic Evil<br>
+          <b>Size:</b> Small<br>
         </p>
         <hr>
         <p>
-          <b>Armor Class:</b> <span id="statBlockAC"></span><br>
-          <b>Hit Points:</b> <span id="statBlockHP"></span><br>
-          <b>Fortitude:</b> <span id="statBlockFortitude"></span><br>
-          <b>Reflex:</b> <span id="statBlockReflex"></span><br>
-          <b>Will:</b> <span id="statBlockWill"></span><br>
+          <b>Armor Class:</b> 16<br>
+          <b>Hit Points:</b> 20<br>
+          <b>Fortitude:</b> +7<br>
+          <b>Reflex:</b> +9<br>
+          <b>Will:</b> +5<br>
+        </p>
+        <hr>
+        <p>
+          <b>Attacks:</b><br>
+          <b>Scimitar:</b> Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) slashing damage.
+        </p>
+        <hr>
+        <p>
+          <b>Special Actions:</b><br>
+          <b>Nimble Escape:</b> The goblin can take the Disengage or Hide action as a bonus action on each of its turns.
+        </p>
+        <hr>
+        <p>
+          <b>Spells:</b><br>
+          <i>(No spells for this monster)</i>
         </p>
       </div>
     </div>
@@ -125,50 +282,85 @@ body {
 
 <div id="EncounterGenerator" class="tabcontent">
   <h3>Encounter Generator</h3>
-  <label for="encounterBiomeSelect">Select Biome:</label><br>
-  <select id="encounterBiomeSelect"></select><br><br>
-  <label for="partyLevel">Party Level:</label><br>
-  <input type="number" id="partyLevel" value="1" min="1"><br><br>
-  <label for="partySize">Party Size:</label><br>
-  <input type="number" id="partySize" value="4" min="1"><br><br>
-  <label for="threatLevelSelect">Select Threat Level:</label><br>
-  <select id="threatLevelSelect"></select><br><br>
-  <button onclick="generateEncounter()">Generate Encounter</button>
-  <hr>
-  <h4>Generated Encounter:</h4>
-  <div id="encounterOutput"></div>
+  <p>Here's a sample encounter:</p>
+  <h4>Primary Faction: Humanoids</h4>
+  <p>Encounter Type: SQUAD</p>
+  <p>Encountering:</p>
+  <ul>
+    <li>Bandit (Level 1)</li>
+    <li>Bandit (Level 1)</li>
+  </ul>
+  <p>Total XP: 80 / 80</p>
+  <p>You also notice signs of other creatures in the area:</p>
+  <ul>
+    <li>Signs of beast activity.</li>
+  </ul>
+  <h4>Key Terrain Feature:</h4>
+  <p>Dense undergrowth providing cover and concealment.</p>
+  <h4>Environmental Condition:</h4>
+  <p>A light mist hangs in the air, reducing visibility slightly.</p>
+  <h4>Encounter Setup:</h4>
+  <p>You sneak up on unprepared enemies, gaining a surprise round.</p>
+  <h4>Inhabitant or Intruder?:</h4>
+  <p>The Humanoids are inhabitants of this area. They will likely defend their territory fiercely.</p>
+  <h4>Morale:</h4>
+  <p>The enemies will attempt to flee if they are clearly outmatched.</p>
+  <h4>Hazard:</h4>
+  <p>Green Slime: A caustic green film clings to the ceiling above, watching for prey to pass beneath it.</p>
 </div>
 
 <div id="LootGenerator" class="tabcontent">
   <h3>Loot Generator</h3>
-  <label for="biomeSelect">Select Biome:</label><br>
-  <select id="biomeSelect" onchange=""></select><br><br>
-  <button onclick="generateLoot()">Generate Loot</button>
-  <hr>
-  <h4>Generated Loot:</h4>
-  <ul id="lootList"></ul>
+  <p>Here are some sample loot items:</p>
+  <ul id="lootList">
+    <li>
+      <div class="tooltip">Rusty Shortsword
+        <span class="tooltiptext">
+          <b>Rusty Shortsword</b><br>
+          Type: weapon<br>
+          Description: A well-used, slightly rusted shortsword. Still functional, but not pretty.
+        </span>
+      </div>
+    </li>
+    <li>
+      <div class="tooltip">Leather Armor
+        <span class="tooltiptext">
+          <b>Leather Armor</b><br>
+          Type: armor<br>
+          Description: Simple leather armor, worn but provides basic protection.
+        </span>
+      </div>
+    </li>
+    <li>
+      <div class="tooltip">Gold Coins (x15)
+        <span class="tooltiptext">
+          <b>Gold Coins (x15)</b><br>
+          Type: currency<br>
+          Description: A small pouch containing 15 gold coins.
+        </span>
+      </div>
+    </li>
+    <li>
+      <div class="tooltip">Wolf Pelt
+        <span class="tooltiptext">
+          <b>Wolf Pelt</b><br>
+          Type: natural_component<br>
+          Description: The hide of a wolf, suitable for crafting or selling.
+        </span>
+      </div>
+    </li>
+  </ul>
 </div>
 
 <div id="CampaignGenerator" class="tabcontent">
   <h3>Campaign Generator</h3>
-  <label for="campaignIdea">Enter your campaign idea (optional):</label><br>
-  <textarea id="campaignIdea" rows="5" cols="50"></textarea><br><br>
-  <button onclick="generateCampaign()">Generate Campaign Premise</button>
-  <hr>
-  <h4>Generated Campaign Premise:</h4>
-  <div id="campaignOutput"></div>
+  <p>Here's a sample campaign premise:</p>
+  <h4>The Whispering Woods Mystery</h4>
+  <p>A series of strange disappearances has plagued the secluded village of Oakhaven, nestled at the edge of the ancient Whispering Woods. Villagers speak of eerie whispers carried on the wind and shadowy figures lurking among the trees. The local lord has offered a substantial reward for anyone brave enough to uncover the truth behind the disappearances and put an end to the terror.</p>
+  <p>Your party, drawn by the promise of coin or the call of adventure, arrives in Oakhaven. They soon discover that the woods are not merely haunted by whispers, but by an ancient fey curse that is slowly twisting the very fabric of nature and drawing innocents into its shadowy embrace. To break the curse, the heroes must delve deep into the heart of the Whispering Woods, confront corrupted fey creatures, and ultimately face the source of the curse—a forgotten fey lord driven mad by centuries of isolation and despair.</p>
 </div>
 
 <script>
-let monsters = [];
-let locations = {};
-let lootTables = {};
-let items = {};
-let encounterRules = {};
-let creatureXpRules = {};
-let terrainDetails = {};
-let hazards = {};
-
 function openTab(evt, tabName) {
   var i, tabcontent, tablinks;
   tabcontent = document.getElementsByClassName("tabcontent");
@@ -183,362 +375,7 @@ function openTab(evt, tabName) {
   evt.currentTarget.className += " active";
 }
 
-function updateStatBlock() {
-  document.getElementById('statBlockName').innerText = document.getElementById('monsterName').value;
-  document.getElementById('statBlockLevel').innerText = document.getElementById('level').value;
-  document.getElementById('statBlockAlignment').innerText = document.getElementById('alignment').value;
-  document.getElementById('statBlockSize').innerText = document.getElementById('size').value;
-  document.getElementById('statBlockAC').innerText = document.getElementById('armorClass').value;
-  document.getElementById('hitPoints').innerText = document.getElementById('hitPoints').value;
-  document.getElementById('fortitude').innerText = document.getElementById('fortitude').value;
-  document.getElementById('reflex').innerText = document.getElementById('reflex').value;
-  document.getElementById('will').innerText = document.getElementById('will').value;
-}
-
-async function loadMonsters() {
-  const response = await fetch('file:///C:/Users/pierr/OneDrive/Desktop/pf2e project/exported_data_json/monsters.json');
-  const allData = await response.json();
-  monsters = allData.filter(item => item.type === 'npc');
-  const monsterSelect = document.getElementById('monsterSelect');
-  monsters.forEach(monster => {
-    const option = document.createElement('option');
-    option.value = monster._id;
-    option.text = monster.name;
-    monsterSelect.appendChild(option);
-  });
-}
-
-function loadMonster() {
-  const monsterId = document.getElementById('monsterSelect').value;
-  const monster = monsters.find(m => m._id === monsterId);
-
-  if (monster) {
-    document.getElementById('monsterName').value = monster.name;
-    document.getElementById('level').value = monster.system.details.level.value;
-    document.getElementById('alignment').value = monster.system.traits.value.find(t => t.startsWith('a')) || '';
-    document.getElementById('size').value = monster.system.traits.size.value;
-    document.getElementById('armorClass').value = monster.system.attributes.ac.value;
-    document.getElementById('hitPoints').value = monster.system.attributes.hp.value;
-    document.getElementById('fortitude').value = monster.system.saves.fortitude.value;
-    document.getElementById('reflex').value = monster.system.saves.reflex.value;
-    document.getElementById('will').value = monster.system.saves.will.value;
-
-    updateStatBlock();
-  }
-}
-
-async function loadLocations() {
-  const response = await fetch('file:///C:/Users/pierr/rpg_generator/locations.json');
-  locations = await response.json();
-  const biomeSelect = document.getElementById('biomeSelect');
-  const encounterBiomeSelect = document.getElementById('encounterBiomeSelect');
-  for (const biome in locations) {
-    const option = document.createElement('option');
-    option.value = biome;
-    option.text = biome.charAt(0).toUpperCase() + biome.slice(1);
-    biomeSelect.appendChild(option);
-
-    const encounterOption = document.createElement('option');
-    encounterOption.value = biome;
-    encounterOption.text = biome.charAt(0).toUpperCase() + biome.slice(1);
-    encounterBiomeSelect.appendChild(encounterOption);
-  }
-}
-
-async function loadEncounterRules() {
-  const response = await fetch('file:///C:/Users/pierr/rpg_generator/encounter_rules.json');
-  encounterRules = await response.json();
-  const threatLevelSelect = document.getElementById('threatLevelSelect');
-  encounterRules.forEach(rule => {
-    const option = document.createElement('option');
-    option.value = rule.threat;
-    option.text = rule.threat;
-    threatLevelSelect.appendChild(option);
-  });
-}
-
-async function generateEncounter() {
-  const selectedBiome = document.getElementById('encounterBiomeSelect').value;
-  const partyLevel = parseInt(document.getElementById('partyLevel').value);
-  const partySize = parseInt(document.getElementById('partySize').value);
-  const selectedThreat = document.getElementById('threatLevelSelect').value;
-  const encounterOutput = document.getElementById('encounterOutput');
-  encounterOutput.innerHTML = ''; // Clear previous encounter
-
-  const threatRule = encounterRules.find(rule => rule.threat === selectedThreat);
-  if (!threatRule) {
-    encounterOutput.innerHTML = `<p>Invalid threat level selected.</p>`;
-    return;
-  }
-
-  let xpBudget = threatRule.xp_budget;
-  const characterAdjustment = threatRule.character_adjustment;
-
-  // Adjust XP budget based on party size
-  if (partySize > 4) {
-    xpBudget += (partySize - 4) * characterAdjustment;
-  } else if (partySize < 4) {
-    xpBudget -= (4 - partySize) * characterAdjustment;
-  }
-
-  let currentXp = 0;
-  let generatedMonsters = [];
-
-  if (locations[selectedBiome]) {
-    const factionsInBiome = locations[selectedBiome].factions;
-    if (factionsInBiome.length > 0) {
-      const primaryFaction = factionsInBiome[Math.floor(Math.random() * factionsInBiome.length)];
-      encounterOutput.innerHTML += `<h4>Primary Faction: ${primaryFaction.charAt(0).toUpperCase() + primaryFaction.slice(1)}</h4>`;
-
-      const possibleMonsters = monsters.filter(monster => {
-        return locations[selectedBiome].creatures[primaryFaction].some(creatureName => monster.name.toLowerCase().includes(creatureName));
-      });
-
-      if (possibleMonsters.length > 0) {
-        let availableMonsters = [...possibleMonsters]; // Create a copy to modify
-
-        // Determine encounter composition (simplified for now)
-        const encounterTypes = ["single_boss", "squad", "horde"];
-        const selectedEncounterType = encounterTypes[Math.floor(Math.random() * encounterTypes.length)];
-
-        encounterOutput.innerHTML += `<p>Encounter Type: ${selectedEncounterType.replace(/_/g, ' ').toUpperCase()}</p>`;
-
-        // Attempt to generate monsters based on composition and XP budget
-        if (selectedEncounterType === "single_boss") {
-          // Try to find a monster close to the XP budget
-          const bossMonster = availableMonsters.find(monster => {
-            const monsterLevel = monster.system.details.level.value;
-            const levelAdjustment = monsterLevel - partyLevel;
-            const xpRule = creatureXpRules.find(rule => rule.level_adjustment === levelAdjustment);
-            return xpRule && xpRule.xp <= xpBudget && xpRule.xp >= xpBudget * 0.8; // Find a boss that uses most of the budget
-          });
-          if (bossMonster) {
-            generatedMonsters.push(bossMonster);
-            currentXp += creatureXpRules.find(rule => rule.level_adjustment === (bossMonster.system.details.level.value - partyLevel)).xp;
-          }
-        } else if (selectedEncounterType === "squad") {
-          // Try to add a few standard creatures
-          let numAdded = 0;
-          while (currentXp < xpBudget && numAdded < 3 && availableMonsters.length > 0) {
-            const randomMonster = availableMonsters[Math.floor(Math.random() * availableMonsters.length)];
-            const monsterLevel = randomMonster.system.details.level.value;
-            const levelAdjustment = monsterLevel - partyLevel;
-            const xpRule = creatureXpRules.find(rule => rule.level_adjustment === levelAdjustment);
-            const monsterXp = xpRule ? xpRule.xp : 0;
-
-            if (monsterXp > 0 && currentXp + monsterXp <= xpBudget) {
-              generatedMonsters.push(randomMonster);
-              currentXp += monsterXp;
-              numAdded++;
-            } else {
-              availableMonsters.splice(availableMonsters.indexOf(randomMonster), 1);
-            }
-          }
-        } else if (selectedEncounterType === "horde") {
-          // Try to add many low-level lackeys
-          let numAdded = 0;
-          while (currentXp < xpBudget && numAdded < 6 && availableMonsters.length > 0) {
-            const randomMonster = availableMonsters.find(monster => {
-              const monsterLevel = monster.system.details.level.value;
-              const levelAdjustment = monsterLevel - partyLevel;
-              const xpRule = creatureXpRules.find(rule => rule.level_adjustment === levelAdjustment);
-              return xpRule && xpRule.xp <= xpBudget * 0.3; // Find cheap lackeys
-            });
-
-            if (randomMonster) {
-              const monsterLevel = randomMonster.system.details.level.value;
-              const levelAdjustment = monsterLevel - partyLevel;
-              const xpRule = creatureXpRules.find(rule => rule.level_adjustment === levelAdjustment);
-              const monsterXp = xpRule ? xpRule.xp : 0;
-
-              if (monsterXp > 0 && currentXp + monsterXp <= xpBudget) {
-                generatedMonsters.push(randomMonster);
-                currentXp += monsterXp;
-                numAdded++;
-              } else {
-                availableMonsters.splice(availableMonsters.indexOf(randomMonster), 1);
-              }
-            } else {
-              break; // No more cheap lackeys found
-            }
-          }
-        }
-
-        if (generatedMonsters.length > 0) {
-          encounterOutput.innerHTML += `<p>Encountering:</p><ul>`;
-          generatedMonters.forEach(monster => {
-            encounterOutput.innerHTML += `<li>${monster.name} (Level ${monster.system.details.level.value})</li>`;
-          });
-          encounterOutput.innerHTML += `</ul>`;
-          encounterOutput.innerHTML += `<p>Total XP: ${currentXp} / ${xpBudget}</p>`;
-        } else {
-          encounterOutput.innerHTML += `<p>Could not generate an encounter for ${selectedThreat} threat level in ${selectedBiome} with party level ${partyLevel}.</p>`;
-        }
-
-      } else {
-        encounterOutput.innerHTML += `<p>No specific monsters found for ${primaryFaction} in ${selectedBiome}.</p>`;
-      }
-
-      // Add environmental flavor based on other factions in the biome
-      const otherFactions = factionsInBiome.filter(f => f !== primaryFaction);
-      if (otherFactions.length > 0) {
-        encounterOutput.innerHTML += `<p>You also notice signs of other creatures in the area:</p><ul>`;
-        otherFactions.forEach(otherFaction => {
-          encounterOutput.innerHTML += `<li>Signs of ${otherFaction} activity.</li>`;
-        });
-        encounterOutput.innerHTML += `</ul>`;
-      }
-
-    } else {
-      encounterOutput.innerHTML += `<p>No factions defined for this biome.</p>`;
-    }
-  } else {
-    encounterOutput.innerHTML += `<p>Please select a biome.</p>`;
-  }
-
-  // Add terrain features and environmental conditions
-  const biomeTerrainDetails = terrainDetails.filter(td => td.type === "feature" && td.parent_terrain && td.parent_terrain.toLowerCase() === selectedBiome);
-  if (biomeTerrainDetails.length > 0) {
-    const randomTerrainFeature = biomeTerrainDetails[Math.floor(Math.random() * biomeTerrainDetails.length)];
-    encounterOutput.innerHTML += `<h4>Key Terrain Feature:</h4><p>${randomTerrainFeature.name}: ${randomTerrainFeature.description}</p>`;
-  }
-
-  const biomeEnvironmentalConditions = terrainDetails.filter(td => td.type === "environmental_condition" && td.parent_terrain && td.parent_terrain.toLowerCase() === selectedBiome);
-  if (biomeEnvironmentalConditions.length > 0) {
-    const randomEnvironmentalCondition = biomeEnvironmentalConditions[Math.floor(Math.random() * biomeEnvironmentalConditions.length)];
-    encounterOutput.innerHTML += `<h4>Environmental Condition:</h4><p>${randomEnvironmentalCondition.name}: ${randomEnvironmentalCondition.description}</p>`;
-  }
-
-  // Add encounter setup description
-  const encounterSetups = [
-    "You sneak up on unprepared enemies, gaining a surprise round.",
-    "You are ambushed by foes who have been hunting you.",
-    "You find yourselves in a formal duel, with clear rules of engagement.",
-    "A diplomatic overture fails, and the situation quickly escalates into a fight."
-  ];
-  const randomSetup = encounterSetups[Math.floor(Math.random() * encounterSetups.length)];
-  encounterOutput.innerHTML += `<h4>Encounter Setup:</h4><p>${randomSetup}</p>`;
-
-  // Add Inhabitant or Intruder narrative
-  const inhabitantIntruder = Math.random() < 0.5 ? "inhabitants" : "intruders";
-  encounterOutput.innerHTML += `<h4>Inhabitant or Intruder?:</h4><p>The ${primaryFaction}s are ${inhabitantIntruder} of this area. They will likely ${inhabitantIntruder === "inhabitants" ? "defend their territory fiercely." : "attempt to achieve their goals and retreat if necessary."}</p>`;
-
-  // Add Morale narrative
-  const moraleOptions = [
-    "The enemies will fight to the death, showing no quarter.",
-    "The enemies will attempt to flee if they are clearly outmatched.",
-    "The enemies might surrender if their leader is defeated or if they are offered a compelling reason.",
-    "The enemies are fanatical and will fight until the last breath, even if it means certain death."
-  ];
-  const randomMorale = moraleOptions[Math.floor(Math.random() * moraleOptions.length)];
-  encounterOutput.innerHTML += `<h4>Morale:</h4><p>${randomMorale}</p>`;
-
-  // Add hazards
-  if (locations[selectedBiome].hazards && locations[selectedBiome].hazards.length > 0) {
-    const randomHazardName = locations[selectedBiome].hazards[Math.floor(Math.random() * locations[selectedBiome].hazards.length)];
-    const hazardDetails = hazards.find(h => h.name === randomHazardName);
-    if (hazardDetails) {
-      encounterOutput.innerHTML += `<h4>Hazard:</h4><p>${hazardDetails.name}: ${hazardDetails.system.details.description}</p>`;
-    } else {
-      encounterOutput.innerHTML += `<h4>Hazard:</h4><p>${randomHazardName} (Details not found)</p>`;
-    }
-  }
-  // Add hazards
-  if (locations[selectedBiome].hazards && locations[selectedBiome].hazards.length > 0) {
-    const randomHazardName = locations[selectedBiome].hazards[Math.floor(Math.random() * locations[selectedBiome].hazards.length)];
-    const hazardDetails = hazards.find(h => h.name === randomHazardName);
-    if (hazardDetails) {
-      encounterOutput.innerHTML += `<h4>Hazard:</h4><p>${hazardDetails.name}: ${hazardDetails.system.details.description}</p>`;
-    } else {
-      encounterOutput.innerHTML += `<h4>Hazard:</h4><p>${randomHazardName} (Details not found)</p>`;
-    }
-  }
-  const response = await fetch('file:///C:/Users/pierr/rpg_generator/creature_xp_rules.json');
-  creatureXpRules = await response.json();
-}
-
-async function loadTerrainDetails() {
-  const response = await fetch('file:///C:/Users/pierr/rpg_generator/environmental_features_dcs.json');
-  terrainDetails = await response.json();
-}
-
-async function loadHazards() {
-  const response = await fetch('file:///C:/Users/pierr/OneDrive/Desktop/pf2e project/exported_data_json/hazards.json');
-  hazards = await response.json();
-}
-
-async function loadLootTables() {
-  const response = await fetch('file:///C:/Users/pierr/rpg_generator/loot_tables.json');
-  lootTables = await response.json();
-}
-
-async function loadItems() {
-  const response = await fetch('file:///C:/Users/pierr/OneDrive/Desktop/pf2e project/exported_data_json/items.json');
-  items = await response.json();
-}
-
-function generateLoot() {
-  const selectedBiome = document.getElementById('biomeSelect').value;
-  const lootList = document.getElementById('lootList');
-  lootList.innerHTML = ''; // Clear previous loot
-
-  if (locations[selectedBiome]) {
-    const factionsInBiome = locations[selectedBiome].factions;
-    factionsInBiome.forEach(faction => {
-      if (lootTables[faction]) {
-        const factionLoot = lootTables[faction];
-        for (const lootCategory in factionLoot) {
-          factionLoot[lootCategory].forEach(lootItem => {
-            if (Math.random() < lootItem.chance) {
-              const itemDetails = items.find(item => item.name === lootItem.item_name);
-              if (itemDetails) {
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `
-                  <div class="tooltip">${itemDetails.name}
-                    <span class="tooltiptext">
-                      <b>${itemDetails.name}</b><br>
-                      Type: ${itemDetails.type}<br>
-                      Description: ${itemDetails.system.description.value}
-                    </span>
-                  </div>
-                `;
-                lootList.appendChild(listItem);
-              } else {
-                const listItem = document.createElement('li');
-                listItem.innerText = lootItem.item_name; // Fallback if item not found in items.json
-                lootList.appendChild(listItem);
-              }
-            }
-          });
-        }
-      }
-    });
-  }
-}
-
-function generateCampaign() {
-  const campaignIdea = document.getElementById('campaignIdea').value;
-  const campaignOutput = document.getElementById('campaignOutput');
-  campaignOutput.innerHTML = ''; // Clear previous premise
-
-  let premise = "";
-  if (campaignIdea) {
-    premise = `Based on your idea: "${campaignIdea}", here's a campaign premise: A powerful artifact has been unearthed, and various factions are vying for control. Your party must secure it before it falls into the wrong hands, leading to a climactic confrontation in a forgotten ruin.`;
-  } else {
-    premise = "A dark prophecy foretells the return of an ancient evil. Heroes are needed to gather allies, uncover forgotten lore, and confront the rising darkness before it consumes the land.";
-  }
-  campaignOutput.innerHTML = `<p>${premise}</p>`;
-}
-
 window.onload = function() {
-  loadMonsters();
-  loadLocations();
-  loadLootTables();
-  loadItems();
-  loadEncounterRules();
-  loadCreatureXpRules();
-  loadTerrainDetails();
-  loadHazards();
   openTab(new Event('default'), 'MonsterCreator');
 };
 </script>

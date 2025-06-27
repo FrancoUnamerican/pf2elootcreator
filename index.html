@@ -127,6 +127,12 @@ body {
   <h3>Encounter Generator</h3>
   <label for="encounterBiomeSelect">Select Biome:</label><br>
   <select id="encounterBiomeSelect"></select><br><br>
+  <label for="partyLevel">Party Level:</label><br>
+  <input type="number" id="partyLevel" value="1" min="1"><br><br>
+  <label for="partySize">Party Size:</label><br>
+  <input type="number" id="partySize" value="4" min="1"><br><br>
+  <label for="threatLevelSelect">Select Threat Level:</label><br>
+  <select id="threatLevelSelect"></select><br><br>
   <button onclick="generateEncounter()">Generate Encounter</button>
   <hr>
   <h4>Generated Encounter:</h4>
@@ -158,6 +164,10 @@ let monsters = [];
 let locations = {};
 let lootTables = {};
 let items = {};
+let encounterRules = {};
+let creatureXpRules = {};
+let terrainDetails = {};
+let hazards = {};
 
 function openTab(evt, tabName) {
   var i, tabcontent, tablinks;
@@ -179,10 +189,10 @@ function updateStatBlock() {
   document.getElementById('statBlockAlignment').innerText = document.getElementById('alignment').value;
   document.getElementById('statBlockSize').innerText = document.getElementById('size').value;
   document.getElementById('statBlockAC').innerText = document.getElementById('armorClass').value;
-  document.getElementById('statBlockHP').innerText = document.getElementById('hitPoints').value;
-  document.getElementById('statBlockFortitude').innerText = document.getElementById('fortitude').value;
-  document.getElementById('statBlockReflex').innerText = document.getElementById('reflex').value;
-  document.getElementById('statBlockWill').innerText = document.getElementById('will').value;
+  document.getElementById('hitPoints').innerText = document.getElementById('hitPoints').value;
+  document.getElementById('fortitude').innerText = document.getElementById('fortitude').value;
+  document.getElementById('reflex').innerText = document.getElementById('reflex').value;
+  document.getElementById('will').innerText = document.getElementById('will').value;
 }
 
 async function loadMonsters() {
@@ -235,32 +245,136 @@ async function loadLocations() {
   }
 }
 
+async function loadEncounterRules() {
+  const response = await fetch('file:///C:/Users/pierr/rpg_generator/encounter_rules.json');
+  encounterRules = await response.json();
+  const threatLevelSelect = document.getElementById('threatLevelSelect');
+  encounterRules.forEach(rule => {
+    const option = document.createElement('option');
+    option.value = rule.threat;
+    option.text = rule.threat;
+    threatLevelSelect.appendChild(option);
+  });
+}
+
 async function generateEncounter() {
   const selectedBiome = document.getElementById('encounterBiomeSelect').value;
+  const partyLevel = parseInt(document.getElementById('partyLevel').value);
+  const partySize = parseInt(document.getElementById('partySize').value);
+  const selectedThreat = document.getElementById('threatLevelSelect').value;
   const encounterOutput = document.getElementById('encounterOutput');
   encounterOutput.innerHTML = ''; // Clear previous encounter
+
+  const threatRule = encounterRules.find(rule => rule.threat === selectedThreat);
+  if (!threatRule) {
+    encounterOutput.innerHTML = `<p>Invalid threat level selected.</p>`;
+    return;
+  }
+
+  let xpBudget = threatRule.xp_budget;
+  const characterAdjustment = threatRule.character_adjustment;
+
+  // Adjust XP budget based on party size
+  if (partySize > 4) {
+    xpBudget += (partySize - 4) * characterAdjustment;
+  } else if (partySize < 4) {
+    xpBudget -= (4 - partySize) * characterAdjustment;
+  }
+
+  let currentXp = 0;
+  let generatedMonsters = [];
 
   if (locations[selectedBiome]) {
     const factionsInBiome = locations[selectedBiome].factions;
     if (factionsInBiome.length > 0) {
-      // Randomly select a primary faction for the encounter
       const primaryFaction = factionsInBiome[Math.floor(Math.random() * factionsInBiome.length)];
       encounterOutput.innerHTML += `<h4>Primary Faction: ${primaryFaction.charAt(0).toUpperCase() + primaryFaction.slice(1)}</h4>`;
 
       const possibleMonsters = monsters.filter(monster => {
-        // Simple check for now: monster name contains a creature from the biome's primary faction
-        // This will need to be refined with proper faction tagging in monster data
         return locations[selectedBiome].creatures[primaryFaction].some(creatureName => monster.name.toLowerCase().includes(creatureName));
       });
 
       if (possibleMonsters.length > 0) {
-        const numMonsters = Math.floor(Math.random() * 3) + 1; // 1-3 monsters for now
-        encounterOutput.innerHTML += `<p>Encountering ${numMonsters} ${primaryFaction}s:</p><ul>`;
-        for (let i = 0; i < numMonsters; i++) {
-          const randomMonster = possibleMonsters[Math.floor(Math.random() * possibleMonsters.length)];
-          encounterOutput.innerHTML += `<li>${randomMonster.name} (Level ${randomMonster.system.details.level.value})</li>`;
+        let availableMonsters = [...possibleMonsters]; // Create a copy to modify
+
+        // Determine encounter composition (simplified for now)
+        const encounterTypes = ["single_boss", "squad", "horde"];
+        const selectedEncounterType = encounterTypes[Math.floor(Math.random() * encounterTypes.length)];
+
+        encounterOutput.innerHTML += `<p>Encounter Type: ${selectedEncounterType.replace(/_/g, ' ').toUpperCase()}</p>`;
+
+        // Attempt to generate monsters based on composition and XP budget
+        if (selectedEncounterType === "single_boss") {
+          // Try to find a monster close to the XP budget
+          const bossMonster = availableMonsters.find(monster => {
+            const monsterLevel = monster.system.details.level.value;
+            const levelAdjustment = monsterLevel - partyLevel;
+            const xpRule = creatureXpRules.find(rule => rule.level_adjustment === levelAdjustment);
+            return xpRule && xpRule.xp <= xpBudget && xpRule.xp >= xpBudget * 0.8; // Find a boss that uses most of the budget
+          });
+          if (bossMonster) {
+            generatedMonsters.push(bossMonster);
+            currentXp += creatureXpRules.find(rule => rule.level_adjustment === (bossMonster.system.details.level.value - partyLevel)).xp;
+          }
+        } else if (selectedEncounterType === "squad") {
+          // Try to add a few standard creatures
+          let numAdded = 0;
+          while (currentXp < xpBudget && numAdded < 3 && availableMonsters.length > 0) {
+            const randomMonster = availableMonsters[Math.floor(Math.random() * availableMonsters.length)];
+            const monsterLevel = randomMonster.system.details.level.value;
+            const levelAdjustment = monsterLevel - partyLevel;
+            const xpRule = creatureXpRules.find(rule => rule.level_adjustment === levelAdjustment);
+            const monsterXp = xpRule ? xpRule.xp : 0;
+
+            if (monsterXp > 0 && currentXp + monsterXp <= xpBudget) {
+              generatedMonsters.push(randomMonster);
+              currentXp += monsterXp;
+              numAdded++;
+            } else {
+              availableMonsters.splice(availableMonsters.indexOf(randomMonster), 1);
+            }
+          }
+        } else if (selectedEncounterType === "horde") {
+          // Try to add many low-level lackeys
+          let numAdded = 0;
+          while (currentXp < xpBudget && numAdded < 6 && availableMonsters.length > 0) {
+            const randomMonster = availableMonsters.find(monster => {
+              const monsterLevel = monster.system.details.level.value;
+              const levelAdjustment = monsterLevel - partyLevel;
+              const xpRule = creatureXpRules.find(rule => rule.level_adjustment === levelAdjustment);
+              return xpRule && xpRule.xp <= xpBudget * 0.3; // Find cheap lackeys
+            });
+
+            if (randomMonster) {
+              const monsterLevel = randomMonster.system.details.level.value;
+              const levelAdjustment = monsterLevel - partyLevel;
+              const xpRule = creatureXpRules.find(rule => rule.level_adjustment === levelAdjustment);
+              const monsterXp = xpRule ? xpRule.xp : 0;
+
+              if (monsterXp > 0 && currentXp + monsterXp <= xpBudget) {
+                generatedMonsters.push(randomMonster);
+                currentXp += monsterXp;
+                numAdded++;
+              } else {
+                availableMonsters.splice(availableMonsters.indexOf(randomMonster), 1);
+              }
+            } else {
+              break; // No more cheap lackeys found
+            }
+          }
         }
-        encounterOutput.innerHTML += `</ul>`;
+
+        if (generatedMonsters.length > 0) {
+          encounterOutput.innerHTML += `<p>Encountering:</p><ul>`;
+          generatedMonters.forEach(monster => {
+            encounterOutput.innerHTML += `<li>${monster.name} (Level ${monster.system.details.level.value})</li>`;
+          });
+          encounterOutput.innerHTML += `</ul>`;
+          encounterOutput.innerHTML += `<p>Total XP: ${currentXp} / ${xpBudget}</p>`;
+        } else {
+          encounterOutput.innerHTML += `<p>Could not generate an encounter for ${selectedThreat} threat level in ${selectedBiome} with party level ${partyLevel}.</p>`;
+        }
+
       } else {
         encounterOutput.innerHTML += `<p>No specific monsters found for ${primaryFaction} in ${selectedBiome}.</p>`;
       }
@@ -281,6 +395,76 @@ async function generateEncounter() {
   } else {
     encounterOutput.innerHTML += `<p>Please select a biome.</p>`;
   }
+
+  // Add terrain features and environmental conditions
+  const biomeTerrainDetails = terrainDetails.filter(td => td.type === "feature" && td.parent_terrain && td.parent_terrain.toLowerCase() === selectedBiome);
+  if (biomeTerrainDetails.length > 0) {
+    const randomTerrainFeature = biomeTerrainDetails[Math.floor(Math.random() * biomeTerrainDetails.length)];
+    encounterOutput.innerHTML += `<h4>Key Terrain Feature:</h4><p>${randomTerrainFeature.name}: ${randomTerrainFeature.description}</p>`;
+  }
+
+  const biomeEnvironmentalConditions = terrainDetails.filter(td => td.type === "environmental_condition" && td.parent_terrain && td.parent_terrain.toLowerCase() === selectedBiome);
+  if (biomeEnvironmentalConditions.length > 0) {
+    const randomEnvironmentalCondition = biomeEnvironmentalConditions[Math.floor(Math.random() * biomeEnvironmentalConditions.length)];
+    encounterOutput.innerHTML += `<h4>Environmental Condition:</h4><p>${randomEnvironmentalCondition.name}: ${randomEnvironmentalCondition.description}</p>`;
+  }
+
+  // Add encounter setup description
+  const encounterSetups = [
+    "You sneak up on unprepared enemies, gaining a surprise round.",
+    "You are ambushed by foes who have been hunting you.",
+    "You find yourselves in a formal duel, with clear rules of engagement.",
+    "A diplomatic overture fails, and the situation quickly escalates into a fight."
+  ];
+  const randomSetup = encounterSetups[Math.floor(Math.random() * encounterSetups.length)];
+  encounterOutput.innerHTML += `<h4>Encounter Setup:</h4><p>${randomSetup}</p>`;
+
+  // Add Inhabitant or Intruder narrative
+  const inhabitantIntruder = Math.random() < 0.5 ? "inhabitants" : "intruders";
+  encounterOutput.innerHTML += `<h4>Inhabitant or Intruder?:</h4><p>The ${primaryFaction}s are ${inhabitantIntruder} of this area. They will likely ${inhabitantIntruder === "inhabitants" ? "defend their territory fiercely." : "attempt to achieve their goals and retreat if necessary."}</p>`;
+
+  // Add Morale narrative
+  const moraleOptions = [
+    "The enemies will fight to the death, showing no quarter.",
+    "The enemies will attempt to flee if they are clearly outmatched.",
+    "The enemies might surrender if their leader is defeated or if they are offered a compelling reason.",
+    "The enemies are fanatical and will fight until the last breath, even if it means certain death."
+  ];
+  const randomMorale = moraleOptions[Math.floor(Math.random() * moraleOptions.length)];
+  encounterOutput.innerHTML += `<h4>Morale:</h4><p>${randomMorale}</p>`;
+
+  // Add hazards
+  if (locations[selectedBiome].hazards && locations[selectedBiome].hazards.length > 0) {
+    const randomHazardName = locations[selectedBiome].hazards[Math.floor(Math.random() * locations[selectedBiome].hazards.length)];
+    const hazardDetails = hazards.find(h => h.name === randomHazardName);
+    if (hazardDetails) {
+      encounterOutput.innerHTML += `<h4>Hazard:</h4><p>${hazardDetails.name}: ${hazardDetails.system.details.description}</p>`;
+    } else {
+      encounterOutput.innerHTML += `<h4>Hazard:</h4><p>${randomHazardName} (Details not found)</p>`;
+    }
+  }
+  // Add hazards
+  if (locations[selectedBiome].hazards && locations[selectedBiome].hazards.length > 0) {
+    const randomHazardName = locations[selectedBiome].hazards[Math.floor(Math.random() * locations[selectedBiome].hazards.length)];
+    const hazardDetails = hazards.find(h => h.name === randomHazardName);
+    if (hazardDetails) {
+      encounterOutput.innerHTML += `<h4>Hazard:</h4><p>${hazardDetails.name}: ${hazardDetails.system.details.description}</p>`;
+    } else {
+      encounterOutput.innerHTML += `<h4>Hazard:</h4><p>${randomHazardName} (Details not found)</p>`;
+    }
+  }
+  const response = await fetch('file:///C:/Users/pierr/rpg_generator/creature_xp_rules.json');
+  creatureXpRules = await response.json();
+}
+
+async function loadTerrainDetails() {
+  const response = await fetch('file:///C:/Users/pierr/rpg_generator/environmental_features_dcs.json');
+  terrainDetails = await response.json();
+}
+
+async function loadHazards() {
+  const response = await fetch('file:///C:/Users/pierr/OneDrive/Desktop/pf2e project/exported_data_json/hazards.json');
+  hazards = await response.json();
 }
 
 async function loadLootTables() {
@@ -351,6 +535,10 @@ window.onload = function() {
   loadLocations();
   loadLootTables();
   loadItems();
+  loadEncounterRules();
+  loadCreatureXpRules();
+  loadTerrainDetails();
+  loadHazards();
   openTab(new Event('default'), 'MonsterCreator');
 };
 </script>

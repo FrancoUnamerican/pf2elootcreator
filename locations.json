@@ -4,13 +4,15 @@
     "creatures": {
       "beast": ["wolf", "bear", "spider"],
       "humanoid": ["bandit", "goblin"]
-    }
+    },
+    "hazards": ["Green Slime", "Pitfall"]
   },
   "mountain": {
     "factions": ["beast", "monstrosity"],
     "creatures": {
       "beast": ["goat", "eagle"],
       "monstrosity": ["griffon"]
-    }
+    },
+    "hazards": ["Bottomless Pit", "Rockfall"]
   }
 }

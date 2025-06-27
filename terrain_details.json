@@ -1,0 +1,231 @@
+[
+  {
+    "name": "Aquatic",
+    "type": "terrain",
+    "description": "Aquatic environments are among the most challenging for PCs short of other worlds and unusual planes. PCs in an aquatic environment need a way to breathe (typically a water breathing spell) and must usually Swim to move, though a PC who sinks to the bottom can walk awkwardly, using the rules for greater difficult terrain. Characters in aquatic environments make frequent use of the rules for aquatic combat (page 30, Player Core 437) and the drowning and suffocation rules (Player Core 437)."
+  },
+  {
+    "name": "Currents and Flowing Water",
+    "type": "feature",
+    "parent_terrain": "Aquatic",
+    "description": "Ocean currents, flowing rivers, and similar moving water are difficult terrain or greater difficult terrain (depending on the speed of the water) for a creature Swimming against the current. At the end of a creature’s turn, it moves a certain distance depending on the current’s speed. For instance, a 10-foot current moves a creature 10 feet in the current’s direction at the end of that creature’s turn."
+  },
+  {
+    "name": "Underwater Visibility",
+    "type": "feature",
+    "parent_terrain": "Aquatic",
+    "description": "Visibility underwater is often limited."
+  },
+  {
+    "name": "Desert",
+    "type": "terrain",
+    "description": "Desert encompasses sandy and rocky deserts as well as badlands. Though tundra is technically a desert, it’s classified as arctic, as the climate is the primary challenge in such areas. Sandy deserts often have quicksand hazards (page 107) and sandstorms."
+  },
+  {
+    "name": "Rubble",
+    "type": "feature",
+    "parent_terrain": "Desert",
+    "description": "Rocky deserts are strewn with rubble, which is difficult terrain. Rubble dense enough to be walked over rather than navigated through is uneven ground."
+  },
+  {
+    "name": "Sand",
+    "type": "feature",
+    "parent_terrain": "Desert",
+    "description": "Packed sand doesn’t usually significantly impede a character’s movement, but loose sand is either difficult terrain (if it’s shallow) or uneven ground (if it’s deep). The wind in a desert often shifts sand into dunes, hills of loose sand with uneven ground facing the wind and steeper inclines away from the wind."
+  },
+  {
+    "name": "Forest",
+    "type": "terrain",
+    "description": "These diverse environments include jungles and other wooded areas. They are sometimes struck by wildfires."
+  },
+  {
+    "name": "Canopies",
+    "type": "feature",
+    "parent_terrain": "Forest",
+    "description": "Canopies provide cover and concealment."
+  },
+  {
+    "name": "Mountain",
+    "type": "terrain",
+    "description": "Mountain environments also include hills, which share many aspects of mountains, though not their more extreme features. The most common disasters here are avalanches."
+  },
+  {
+    "name": "Chasms",
+    "type": "feature",
+    "parent_terrain": "Mountain",
+    "description": "Chasms are natural pits, typically at least 20 feet long and clearly visible (barring mundane or magical efforts to conceal them). The main danger posed by a chasm is that characters must Long Jump to get across. Alternatively, characters can take the safer but slower route of Climbing down the near side of the chasm and then ascending the far side to get across."
+  },
+  {
+    "name": "Cliffs",
+    "type": "feature",
+    "parent_terrain": "Mountain",
+    "description": "Cliffs and rock walls require creatures to Climb to ascend or descend. Without extensive safety precautions, a critical failure on Climb checks can result in significant falling damage."
+  },
+  {
+    "name": "Rubble (Mountain)",
+    "type": "feature",
+    "parent_terrain": "Mountain",
+    "description": "Mountains often have extremely rocky areas or shifting, gravelly scree that makes for difficult terrain. Especially deep or pervasive rubble is uneven ground."
+  },
+  {
+    "name": "Slopes",
+    "type": "feature",
+    "parent_terrain": "Mountain",
+    "description": "Slopes can be difficult terrain, especially when steep."
+  },
+  {
+    "name": "Undergrowth (Mountain)",
+    "type": "feature",
+    "parent_terrain": "Mountain",
+    "description": "Light undergrowth is common in mountains. It is difficult terrain and allows a character to Take Cover."
+  },
+  {
+    "name": "Plains",
+    "type": "terrain",
+    "description": "The plains environment encompasses grasslands such as savannas and farmland. The most common disasters in plains are floods."
+  },
+  {
+    "name": "Swamp",
+    "type": "terrain",
+    "description": "Swamps are often diseaseridden waste. They are prone to flooding, since they act as natural sponges and absorb a great deal of water before they flood."
+  },
+  {
+    "name": "Bogs",
+    "type": "feature",
+    "parent_terrain": "Swamp",
+    "description": "Also called mires, bogs are watery areas that accumulate peat, are covered by shrubs and moss, and sometimes feature floating islands of vegetation covering deeper pools. Shallow bogs are difficult terrain for a Medium creature, and deep bogs are greater difficult terrain. If a bog is deep enough that a creature can’t reach the bottom, the creature has to Swim. Bogs are also acidic, so particularly extreme or magical bogs can be hazardous terrain."
+  },
+  {
+    "name": "Undergrowth (Swamp)",
+    "type": "feature",
+    "parent_terrain": "Swamp",
+    "description": "Light undergrowth is difficult terrain that allows a character to Take Cover, while heavy undergrowth is greater difficult terrain that provides cover automatically. Some sorts of undergrowth, such as thorns, are also hazardous terrain, and areas with plenty of twisting roots are uneven ground."
+  },
+  {
+    "name": "Urban",
+    "type": "terrain",
+    "description": "Urban environments include open city spaces as well as buildings."
+  },
+  {
+    "name": "Doors",
+    "type": "feature",
+    "parent_terrain": "Urban",
+    "description": "Doors can be opened or forced open.",
+    "dcs": {
+      "Wood": {"Climb DC": 20, "Hardness": 10, "HP": 40, "BT": 20},
+      "Stone": {"Climb DC": 30, "Hardness": 14, "HP": 56, "BT": 28},
+      "Reinforced wood": {"Climb DC": 15, "Hardness": 15, "HP": 60, "BT": 30},
+      "Iron": {"Climb DC": 30, "Hardness": 18, "HP": 72, "BT": 36}
+    }
+  },
+  {
+    "name": "Walls",
+    "type": "feature",
+    "parent_terrain": "Urban",
+    "description": "Walls can be climbed or breached.",
+    "dcs": {
+      "Crumbling masonry": {"Climb DC": 15, "Hardness": 10, "HP": 40, "BT": 20},
+      "Wooden slats": {"Climb DC": 15, "Hardness": 10, "HP": 40, "BT": 20},
+      "Masonry": {"Climb DC": 20, "Hardness": 14, "HP": 56, "BT": 28},
+      "Hewn stone": {"Climb DC": 30, "Hardness": 14, "HP": 56, "BT": 28},
+      "Iron": {"Climb DC": 40, "Hardness": 18, "HP": 72, "BT": 36}
+    }
+  },
+  {
+    "name": "Portcullises",
+    "type": "feature",
+    "parent_terrain": "Urban",
+    "description": "A portcullis is a wooden or iron grate that descends to seal off a gate or corridor.",
+    "dcs": {
+      "Wood": {"Climb DC": 10, "Hardness": 10, "HP": 40, "BT": 20},
+      "Iron": {"Climb DC": 10, "Hardness": 18, "HP": 72, "BT": 36}
+    }
+  },
+  {
+    "name": "Forcing Open (Stuck door or window)",
+    "type": "rule",
+    "parent_feature": "Doors",
+    "description": "Structures that can be opened—such as doors, gates, and windows—can be Forced Open using Athletics. This is usually necessary only if they’re locked or stuck.",
+    "dc": 15
+  },
+  {
+    "name": "Forcing Open (Exceptionally stuck)",
+    "type": "rule",
+    "parent_feature": "Doors",
+    "description": "",
+    "dc": 20
+  },
+  {
+    "name": "Forcing Open (Lift wooden portcullis)",
+    "type": "rule",
+    "parent_feature": "Portcullises",
+    "description": "",
+    "dc": 20
+  },
+  {
+    "name": "Forcing Open (Lift iron portcullis)",
+    "type": "rule",
+    "parent_feature": "Portcullises",
+    "description": "",
+    "dc": "See entry"
+  },
+  {
+    "name": "Gates",
+    "type": "feature",
+    "parent_terrain": "Urban",
+    "description": "Walled settlements often have gates that the city can close for defense or open to allow travel. A typical gate consists of one portcullis at each end of a gatehouse, with murder holes in between or other protected spots from which guards can attack foes."
+  },
+  {
+    "name": "Guards",
+    "type": "feature",
+    "parent_terrain": "Urban",
+    "description": "Most settlements of significant size have guards working in shifts to protect the settlement at all hours, patrolling the streets and guarding various posts. The size of this force varies from one guard for every 1,000 residents to a force 10 times this number."
+  },
+  {
+    "name": "Sewer",
+    "type": "feature",
+    "parent_terrain": "Urban",
+    "description": "Sewers can be accessed through sewer grates, which usually require 2 or more Interact actions to open."
+  },
+  {
+    "name": "Sewer Gas",
+    "type": "feature",
+    "parent_terrain": "Urban",
+    "description": "Sewer gas often contains pockets of highly flammable gas. A pocket of sewer gas exposed to a source of flame explodes, dealing moderate environmental fire damage to creatures in the area."
+  },
+  {
+    "name": "Stairs",
+    "type": "feature",
+    "parent_terrain": "Urban",
+    "description": "Stairs are difficult terrain for characters moving up them, and shoddy stairs might also be uneven ground. Some temples and giant-built structures have enormous stairs that are greater difficult terrain both up and down, or might require Climbing every step."
+  },
+  {
+    "name": "Streets",
+    "type": "feature",
+    "parent_terrain": "Urban",
+    "description": "Most settlements have narrow and twisting streets that were largely established organically as the settlement grew in size. These roads are rarely more than 20 feet wide, with alleys as narrow as 5 feet. Streets are generally paved with cobblestones. If the cobblestones are in poor repair, they could be difficult terrain or uneven ground."
+  },
+  {
+    "name": "Underground",
+    "type": "terrain",
+    "description": "Underground environments include natural caves, underground vaults, and dungeons. Natural caves and deep underground vaults have some of the same terrain features as mountains, such as chasms and cliffs. The most common disasters underground are collapses."
+  },
+  {
+    "name": "Dungeons",
+    "type": "feature",
+    "parent_terrain": "Underground",
+    "description": "Dungeon environments, which include both ruins and contemporary buildings constructed in the wilderness, are a fairly common venue for adventures. As an environment, they combine urban features like doors and buildings (page 92) with features from an underground environment, and occasionally components from other environments. While underground dungeons are particularly common, you might also consider setting your adventure in a ruin reclaimed by the forest, with giant trees spreading their roots through the walls, or a ruin deep in a swamp, with bogs covering access to some of the ruin’s hidden secrets."
+  },
+  {
+    "name": "Floors",
+    "type": "feature",
+    "parent_terrain": "Underground",
+    "description": "Natural underground environments rarely have flat floors, instead featuring abrupt changes in elevation that result in difficult terrain, uneven ground, and inclines."
+  },
+  {
+    "name": "Ledges",
+    "type": "feature",
+    "parent_terrain": "Underground",
+    "description": "Ledges can be difficult to Climb."
+  }
+]

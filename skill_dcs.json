@@ -1,0 +1,22 @@
+[
+  {
+    "proficiency_rank": "Untrained",
+    "dc": 10
+  },
+  {
+    "proficiency_rank": "Trained",
+    "dc": 15
+  },
+  {
+    "proficiency_rank": "Expert",
+    "dc": 20
+  },
+  {
+    "proficiency_rank": "Master",
+    "dc": 25
+  },
+  {
+    "proficiency_rank": "Legendary",
+    "dc": 30
+  }
+]

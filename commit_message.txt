@@ -1,0 +1,1 @@
+Initial commit: Set up RPG Content Generator with basic tabs, monster editor, loot generator, encounter generator, and campaign generator.
